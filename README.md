@@ -1,4 +1,9 @@
+## Source Attribution
 
+This project builds on and adapts code from the open-source project [CollabCoder](https://github.com/gaojie058/CollabCoder).  
+I gratefully acknowledge the original authors and contributors of that repository.
+
+This repository includes modifications and extensions for my own use case.
 
 <img src="./figure/logo-blue.svg" width="20%"> <img src="./figure/Collab-coder.svg" width="79%">
 
@@ -11,10 +16,6 @@
 [![Frontend:React](https://img.shields.io/badge/Frontend-React-5fcfef.svg)](https://reactjs.org/)
 [![Backend:Express.js](https://img.shields.io/badge/Backend-Express.js-green.svg)](https://expressjs.com/)
 [![Version:1.0.0](https://img.shields.io/badge/Version-1.0.0-blue.svg)](https://github.com/gaojie058/CollabCoder-Project)
-
-
-
-
 
 
 **CollabCoder** is a one-stop, end-to-end **Collaborative Qualitative Analysis (CQA)** workflow that integrates **Large Language Models (LLMs)** into key _inductive_ CQA stages aligned with the standard CQA process, aiming to lower the bar for adhering to a strict CQA procedure.
