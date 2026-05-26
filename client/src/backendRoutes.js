@@ -1,6 +1,15 @@
 // backend routings for frontend
-const baseUrl = "http://localhost:5001/"
-// const baseUrl = process.env.BASE_URL
+const baseUrl = (process.env.REACT_APP_API_URL || "http://localhost:5001/").replace(/\/?$/, "/")
+
+// Use query param so empty project names (legacy bad rows) can still be deleted
+const projectDeletePath = (owner, name, id) => {
+    const ownerSeg = encodeURIComponent(owner)
+    if (id) {
+        return `project/${ownerSeg}?id=${encodeURIComponent(id)}`
+    }
+    return `project/${ownerSeg}?name=${encodeURIComponent(name)}`
+}
+
 const backendRoutes = {
     DOCUMENT_URL: baseUrl + "document/",
     SUMMARY_URL: baseUrl + "summary/",
@@ -18,4 +27,5 @@ const backendRoutes = {
     CODE_GROUP_URL: baseUrl + "codegroup/"
 }
 
+export { projectDeletePath }
 export default backendRoutes;

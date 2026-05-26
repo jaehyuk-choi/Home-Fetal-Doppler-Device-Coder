@@ -125,8 +125,16 @@ export default function AddNewProjectPage() {
 
 
     const handleConfirm = async () => {
-
-
+        const trimmedName = projectName.trim()
+        if (!trimmedName) {
+            myAlert('Error', 'Please enter a project name.', 'error', 3000)
+            setProjectNameError(true)
+            return
+        }
+        if (projectNameError) {
+            myAlert('Error', 'A project with this name already exists.', 'error', 3000)
+            return
+        }
 
         // concat all file text
         if (files.length > 0) {
@@ -161,7 +169,7 @@ export default function AddNewProjectPage() {
 
             // send project object
             let projectObj = createProjectObj(
-                projectName,
+                trimmedName,
                 userName,
                 text,
                 // localStorage.getItem("file_names"),
@@ -183,9 +191,9 @@ export default function AddNewProjectPage() {
             // console.log(projectObj);
             const result = await useAddProject(projectObj)
             if (result) {
-                navigate(createEditUrl(userName, projectName, userName))
+                navigate(createEditUrl(userName, trimmedName, userName))
             } else {
-                console.log("failed create project");
+                myAlert('Error', 'Failed to create project. Check the backend is running.', 'error', 3000)
             }
         } else {
             myAlert('Error', 'please at least upload one file', 'error', 3000)
@@ -209,13 +217,26 @@ export default function AddNewProjectPage() {
                             <TextField
                                 id="name-input"
                                 variant="outlined"
+                                required
+                                value={projectName}
                                 error={projectNameError}
+                                helperText={projectNameError ? "This project name is already taken." : ""}
+                                onChange={(event) => {
+                                    setProjectName(event.target.value)
+                                    if (projectNameError) setProjectNameError(false)
+                                }}
                                 onBlur={async (event) => {
-                                    if (await checkNoSameNameExist(event.target.value, userName)) {
-                                        setProjectName(event.target.value)
-                                        setProjectNameError(false)
+                                    const name = event.target.value.trim()
+                                    setProjectName(name)
+                                    if (!name) {
+                                        setProjectNameError(true)
+                                        return
                                     }
-                                    else { setProjectNameError(true); }
+                                    if (await checkNoSameNameExist(name, userName)) {
+                                        setProjectNameError(false)
+                                    } else {
+                                        setProjectNameError(true)
+                                    }
                                 }} />
                             <Divider />
 

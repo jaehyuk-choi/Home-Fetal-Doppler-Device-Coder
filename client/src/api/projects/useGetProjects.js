@@ -3,7 +3,7 @@ import instance from "../instance";
 const useGetProjects = async (username) => {
     try {
         const result = await instance.get(`projects/${username}/`);
-        if (result.message = 'success') {
+        if (result.message === 'success') {
             return {
                 status: true,
                 data: result.data

@@ -11,8 +11,8 @@ import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
 import DialogContentText from '@mui/material/DialogContentText';
 import DialogTitle from '@mui/material/DialogTitle';
-import axios from 'axios';
-import backendRoutes from '../backendRoutes';
+import instance from '../api/instance';
+import backendRoutes, { projectDeletePath } from '../backendRoutes';
 
 export default function ProjectCard(props) {
     let project = props.project
@@ -26,21 +26,33 @@ export default function ProjectCard(props) {
     const [removeDocName, setRemoveDocName] = React.useState("");
 
     const handleRemoveProject = async (project) => {
-        const res = await axios.delete(backendRoutes.PROJECT_URL + project.owner + "/" + project.name + "/")
-        if (res.data.deletedCount == 1) {
-            alert("Successfully removed project!")
-            let newProjects = projects.slice(0)
-            newProjects.splice(projects.indexOf(project), 1)
-            setProjects(newProjects)
-        } else {
-            alert("Failed removing project!")
+        const owner = project?.owner
+        const name = project?.name
+        if (!owner || name === undefined || name === null) {
+            alert("Cannot delete: project is missing owner or name.")
+            return
         }
-
+        try {
+            const projectId = project._id || project.id
+            const res = await instance.delete(projectDeletePath(owner, name, projectId))
+            if (res.deletedCount === 1) {
+                alert("Successfully removed project!")
+                const newProjects = projects.slice(0)
+                newProjects.splice(projects.indexOf(project), 1)
+                setProjects(newProjects)
+            } else {
+                alert("Project not found in the database.")
+            }
+        } catch (err) {
+            console.error(err)
+            const msg = err.response?.data?.message || err.message || "Failed to remove project."
+            alert(msg)
+        }
     };
 
-    const handleDialogOpen = (project) => {
+    const handleDialogOpen = (proj) => {
         setDialogOpen(true);
-        setRemoveDocName(project);
+        setRemoveDocName(proj.name || "(unnamed project)");
     };
 
     const handleDialogClose = (remove, project) => {
@@ -57,7 +69,7 @@ export default function ProjectCard(props) {
             <CardContent>
                 <Tooltip title={project.name}>
                     <Typography variant="h3" component="div" noWrap>
-                        {project.name}
+                        {project.name || "(unnamed project)"}
                     </Typography>
                 </Tooltip>
 
@@ -89,7 +101,7 @@ export default function ProjectCard(props) {
                     </IconButton>
                 </Tooltip>
                 <Tooltip title="Delete">
-                    <IconButton aria-label="delete" onClick={() => handleDialogOpen(project.name)} >
+                    <IconButton aria-label="delete" onClick={() => handleDialogOpen(project)} >
                         <DeleteIcon />
                     </IconButton>
                 </Tooltip>

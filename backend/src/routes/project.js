@@ -1,4 +1,5 @@
 const express = require("express");
+const { ObjectId } = require("mongodb");
 
 const dbo = require("../db/Connection");
 const { query } = require("../db/Utils");
@@ -38,18 +39,49 @@ projectRouter.route("/:owner/:project").get(function (req, res) {
     })
 });
 
-projectRouter.route("/:owner/:project").delete(async function (req, res) {
-  let filter = { name: req.params.project, owner: req.params.owner }
+const deleteProjectByFilter = (filter, res) => {
   const coll = dbo.getDb().collection(collection);
   coll.deleteOne(filter)
     .then(result => {
-      res.send(result)
-      console.log(`Deleted ${result.deletedCount} item.`)
+      if (result.deletedCount === 1) {
+        res.json(result)
+        console.log(`Deleted ${result.deletedCount} item.`)
+      } else {
+        res.status(404).json({ message: "Project not found.", deletedCount: 0 })
+      }
     })
     .catch(err => {
-      res.send(err)
+      res.status(500).json({ message: err.message })
       console.error(`Delete failed with error: ${err}`)
     })
+}
+
+// DELETE /project/:owner?name=... — supports empty name (?name=)
+projectRouter.route("/:owner").delete(async function (req, res) {
+  const owner = decodeURIComponent(req.params.owner || "")
+  if (!owner) {
+    return res.status(400).json({ message: "Owner is required." })
+  }
+  if (req.query.id) {
+    try {
+      return deleteProjectByFilter({ _id: new ObjectId(req.query.id), owner }, res)
+    } catch (err) {
+      return res.status(400).json({ message: "Invalid project id." })
+    }
+  }
+  if (req.query.name === undefined) {
+    return res.status(400).json({ message: "Query param 'name' or 'id' is required." })
+  }
+  deleteProjectByFilter({ owner, name: String(req.query.name) }, res)
+});
+
+projectRouter.route("/:owner/:project").delete(async function (req, res) {
+  const owner = decodeURIComponent(req.params.owner || "")
+  const name = decodeURIComponent(req.params.project || "")
+  if (!owner || !name) {
+    return res.status(400).json({ message: "Owner and project name are required." })
+  }
+  deleteProjectByFilter({ name, owner }, res)
 });
 
 module.exports = projectRouter;

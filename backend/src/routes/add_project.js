@@ -10,6 +10,13 @@ const fs = require('fs');
 addprojectRouter.route('/').post(async (req, res) => {
   let db_connect = dbo.getDb();
   let myobj = req.body
+  const projectName = (req.body.name || "").trim()
+  const projectOwner = (req.body.owner || "").trim()
+  if (!projectName || !projectOwner) {
+    return res.status(400).json({ message: 'failed', error: 'Project name and owner are required.' })
+  }
+  myobj.name = projectName
+  myobj.owner = projectOwner
   let codingLevel = req.body.coding_level
   let text = req.body.input_docs
   let collaborators = req.body.coders
@@ -31,7 +38,7 @@ addprojectRouter.route('/').post(async (req, res) => {
   }
   
   
-  if (segmented_data) { 
+  if (segmented_data && segmented_data.length > 0) {
 
     myobj["segmented_data"] = segmented_data.map((interview, index) => {
       let interview_data = interview.trim()
@@ -56,13 +63,19 @@ addprojectRouter.route('/').post(async (req, res) => {
     }).filter(data => data != undefined && data != null)
 
 
-    insert(db_connect, "projects", [myobj]) 
-      .then(()=>{
+    if (!myobj.segmented_data || myobj.segmented_data.length === 0) {
+      return res.status(400).json({ message: 'failed', error: 'No text segments found in the uploaded file.' })
+    }
+
+    insert(db_connect, "projects", [myobj])
+      .then(() => {
         res.json({ message: 'success' })
       })
-      .catch(()=>{
+      .catch(() => {
         res.json({ message: 'failed' })
       })
+  } else {
+    res.status(400).json({ message: 'failed', error: 'Could not parse the uploaded file. Use .txt or .csv.' })
   }
 });
 
