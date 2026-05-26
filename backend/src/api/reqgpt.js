@@ -6,14 +6,17 @@ const configuration = new Configuration({
 const openai = new OpenAIApi(configuration);
 
 const getResponseData = async (promptText) => {
+  const model = process.env.OPENAI_MODEL || "gpt-4o-mini";
   try {
     const completion = await openai.createChatCompletion({
-      model: "gpt-4-0613",
+      model,
       messages: [{ role: "user", content: promptText }],
     });
     return completion.data.choices[0].message.content;
   } catch (error) {
-    console.error("Error:", error);
+    const apiMessage = error?.response?.data?.error?.message;
+    console.error("OpenAI API error:", apiMessage || error.message);
+    throw error;
   }
 };
 

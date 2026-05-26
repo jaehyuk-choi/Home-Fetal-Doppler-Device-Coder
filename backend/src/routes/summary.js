@@ -27,7 +27,8 @@ const generateOneSentenceSummary = async (sentence) => {
         return gptSummariesList
     }
     catch (err) {
-        console.log(err.response)
+        console.log(err.response?.data?.error || err.message)
+        return []
     }
 }
 
@@ -63,7 +64,8 @@ const generateSimilarSummaries = async (sentence, currentCodesList) => {
         return gptSimilarCodesList
     }
     catch (err) {
-        console.log(err.response)
+        console.log(err.response?.data?.error || err.message)
+        return []
     }
 }
 

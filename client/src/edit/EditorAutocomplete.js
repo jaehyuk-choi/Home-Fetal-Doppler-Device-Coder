@@ -75,14 +75,16 @@ export default function EditorAutocomplete(props) {
       let generatedCodes = data.response
 
       let newOptions = []
-      newOptions.push(generatedCodes.gptsummary.map(code => (
+      const gptsummary = generatedCodes?.gptsummary || []
+      const similarCodes = generatedCodes?.similarCodes || []
+      newOptions.push(gptsummary.map(code => (
         {
           id: index,
           code: code,
           author: Constants.OPEN_AI_MODEL
         }
       )))
-      newOptions.push(generatedCodes.similarCodes.map(code => (
+      newOptions.push(similarCodes.map(code => (
         {
           id: index,
           code: code,
@@ -96,6 +98,8 @@ export default function EditorAutocomplete(props) {
     } catch (err) {
       setLoading(false)
       console.log(err)
+      const msg = err?.response?.data?.error || err?.message || "GPT suggestion failed. Check backend logs and OPENAI_API_KEY."
+      alert(msg)
     }
   };
 
